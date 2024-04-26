@@ -1,4 +1,4 @@
-import { Signal } from "./signal.js";
+import { Signal } from "../src/signal.js";
 
 /**@type {Signal<string>} */
 const text_signal = new Signal("");
