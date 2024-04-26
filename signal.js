@@ -12,14 +12,20 @@ export class Signal {
   /**@type {ContextCallback} */
   static #current_context = null;
 
-  /**@param {ContextCallback} fn */
+  /**
+   * Create an effect that runs every time the value of Signal is set
+   * @param {ContextCallback} fn
+   */
   static effect(fn) {
     Signal.#current_context = fn;
     fn(true);
     Signal.#current_context = undefined;
   }
 
-  /**@param {ContextCallback} fn */
+  /**
+   * Updates to signals inside a batch context signals dependent effects only once if multiple signals shares same effects
+   * @param {ContextCallback} fn
+   */
   static batch(fn) {
     Signal.#is_batching = true;
     fn(true);
@@ -38,6 +44,9 @@ export class Signal {
     this.#value = init;
   }
 
+  /**
+   * Returns the value of the Signal
+   */
   get value() {
     if (Signal.#current_context != undefined) {
       this.#context.add(Signal.#current_context);
@@ -46,7 +55,10 @@ export class Signal {
     return this.#value;
   }
 
-  /** @param {T} v */
+  /**
+   * Sets the value of the signal
+   * @param {T} v
+   */
   set value(v) {
     this.#value = v;
 
@@ -56,4 +68,18 @@ export class Signal {
       this.#context.forEach((context) => context(false));
     }
   }
+
+  /**
+   * Run all the referenced effects manually
+   */
+  signal() {
+    if (Signal.#is_batching) {
+      this.#context.forEach((context) => Signal.#batch_context.add(context));
+    } else {
+      this.#context.forEach((context) => context(false));
+    }
+  }
+
+  // TODO - Removes a effect based on id
+  clear(id) {}
 }
